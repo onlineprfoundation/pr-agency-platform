@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Lead;
+use App\Services\RecaptchaService;
+use Illuminate\Http\Request;
+
+class LeadFormController extends Controller
+{
+    public function contact()
+    {
+        return view('contact', [
+            'recaptchaEnabled' => RecaptchaService::isRequiredFor('contact'),
+            'recaptchaSiteKey' => RecaptchaService::getSiteKey(),
+        ]);
+    }
+
+    public function storeContact(Request $request)
+    {
+        if (RecaptchaService::isRequiredFor('contact')) {
+            $request->validate(['g-recaptcha-response' => 'required']);
+            if (! RecaptchaService::verify($request->input('g-recaptcha-response'))) {
+                return redirect()->route('contact')
+                    ->withInput()
+                    ->withErrors(['g-recaptcha-response' => 'reCAPTCHA verification failed. Please try again.']);
+            }
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'phone' => 'nullable|string|max:50',
+            'company' => 'nullable|string|max:255',
+            'message' => 'required|string|max:5000',
+        ]);
+
+        Lead::create([
+            ...$validated,
+            'source' => 'contact',
+            'status' => 'new',
+        ]);
+
+        return redirect()->route('contact')->with('success', 'Thank you! We will get back to you soon.');
+    }
+
+    public function quote()
+    {
+        return view('quote', [
+            'recaptchaEnabled' => RecaptchaService::isRequiredFor('quote'),
+            'recaptchaSiteKey' => RecaptchaService::getSiteKey(),
+        ]);
+    }
+
+    public function storeQuote(Request $request)
+    {
+        if (RecaptchaService::isRequiredFor('quote')) {
+            $request->validate(['g-recaptcha-response' => 'required']);
+            if (! RecaptchaService::verify($request->input('g-recaptcha-response'))) {
+                return redirect()->route('quote')
+                    ->withInput()
+                    ->withErrors(['g-recaptcha-response' => 'reCAPTCHA verification failed. Please try again.']);
+            }
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'phone' => 'nullable|string|max:50',
+            'company' => 'nullable|string|max:255',
+            'message' => 'nullable|string|max:5000',
+            'package_interest' => 'nullable|string|max:255',
+        ]);
+
+        $message = $validated['message'] ?? '';
+        if (! empty($validated['package_interest'] ?? '')) {
+            $message = "Package interest: {$validated['package_interest']}\n\n" . $message;
+        }
+
+        Lead::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'company' => $validated['company'] ?? null,
+            'message' => $message,
+            'source' => 'quote',
+            'status' => 'new',
+        ]);
+
+        return redirect()->route('quote')->with('success', 'Thank you! We will send you a quote soon.');
+    }
+}
