@@ -1,6 +1,6 @@
 # Online PR – Agency Platform
 
-A self-hosted Laravel application for PR agencies. Manage clients, projects, publications, invoicing, and a client portal—all configurable via admin settings. Distribution-ready with web installer, Stripe, SMTP, and optional reCAPTCHA.
+A self-hosted Laravel application for PR agencies. Deploy via cPanel using the included build script. Manage clients, projects, publications, invoicing, and a client portal—all configurable via admin settings. Distribution-ready with web installer, Stripe, SMTP, and optional reCAPTCHA.
 
 ## Features
 
