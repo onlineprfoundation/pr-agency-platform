@@ -1,4 +1,4 @@
-# Online.PR – Agency Platform
+# Online PR – Agency Platform
 
 A self-hosted Laravel application for PR agencies. Manage clients, projects, publications, invoicing, and a client portal—all configurable via admin settings. Distribution-ready with web installer, Stripe, SMTP, and optional reCAPTCHA.
 
@@ -49,10 +49,10 @@ A self-hosted Laravel application for PR agencies. Manage clients, projects, pub
 
 ### Module Marketplace
 - UI to browse and enable/disable modules
-- Architecture for future exclusive module marketplace (official modules by Online.PR)
+- Architecture for future exclusive module marketplace (official modules by Online PR)
 
 ### Attribution
-Footer displays "Powered by Online.PR" (required by license).
+Footer displays "Powered by Online PR" (required by license).
 
 ---
 
@@ -155,7 +155,7 @@ git init
 
 ```bash
 git add .
-git commit -m "Initial commit: Online.PR agency platform"
+git commit -m "Initial commit: Online PR agency platform"
 ```
 
 ### Step 3: Create Repository on GitHub
@@ -194,7 +194,7 @@ gh repo create online-pr-agency-platform --public --source=. --push
 
 ## License & Attribution
 
-MIT License with attribution clause. You must retain the "Powered by Online.PR" credit in the public footer. See [LICENSE](LICENSE) for full terms.
+MIT License with attribution clause. You must retain the "Powered by Online PR" credit in the public footer. See [LICENSE](LICENSE) for full terms.
 
 ---
 

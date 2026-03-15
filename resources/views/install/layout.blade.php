@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Install - Online.PR</title>
+    <title>Install - Online PR</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -17,7 +17,7 @@
     <div class="min-h-screen flex flex-col">
         <header class="bg-white border-b py-4">
             <div class="max-w-2xl mx-auto px-4">
-                <h1 class="text-xl font-bold text-gray-900">Online.PR Installer</h1>
+                <h1 class="text-xl font-bold text-gray-900">Online PR Installer</h1>
                 <p class="text-sm text-gray-500 mt-1">Step-by-step setup wizard</p>
             </div>
         </header>
@@ -40,7 +40,7 @@
         </div>
 
         <footer class="py-4 text-center text-sm text-gray-500">
-            <a href="https://online.pr" target="_blank" rel="noopener">Powered by Online.PR</a>
+            <a href="https://online.pr" target="_blank" rel="noopener">Powered by Online PR</a>
         </footer>
     </div>
 </body>

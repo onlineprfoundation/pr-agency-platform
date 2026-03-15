@@ -154,7 +154,7 @@ class InstallService
             $envContent = preg_replace('/^APP_KEY=.*/m', 'APP_KEY=' . $key, $envContent);
 
             // App settings
-            $envContent = preg_replace('/^APP_NAME=.*/m', 'APP_NAME="' . addslashes($data['app_name'] ?? 'Online.PR') . '"', $envContent);
+            $envContent = preg_replace('/^APP_NAME=.*/m', 'APP_NAME="' . addslashes($data['app_name'] ?? 'Online PR') . '"', $envContent);
             $envContent = preg_replace('/^APP_URL=.*/m', 'APP_URL=' . ($data['app_url'] ?? 'http://localhost'), $envContent);
 
             // Database

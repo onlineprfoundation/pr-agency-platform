@@ -23,7 +23,7 @@ git init
 
 ```bash
 git add .
-git commit -m "Initial commit: Online.PR agency platform"
+git commit -m "Initial commit: Online PR agency platform"
 ```
 
 ### 3. Create Repo on GitHub
@@ -71,7 +71,7 @@ Follow the prompts (browser or token).
 cd /Users/apple/online\ pr/agency-platform
 git init
 git add .
-git commit -m "Initial commit: Online.PR agency platform"
+git commit -m "Initial commit: Online PR agency platform"
 gh repo create online-pr-agency-platform --public --source=. --push --description "Self-hosted PR agency platform – clients, projects, invoicing, client portal"
 ```
 

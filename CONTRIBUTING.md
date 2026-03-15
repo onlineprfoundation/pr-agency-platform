@@ -1,4 +1,4 @@
-# Contributing to Online.PR
+# Contributing to Online PR
 
 Thank you for your interest in contributing.
 

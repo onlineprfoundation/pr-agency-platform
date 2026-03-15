@@ -4,7 +4,7 @@ The platform includes a module architecture for future expansion.
 
 ## Overview
 
-- **Official modules**: Published by Online.PR (e.g. `online-pr/projects`, `online-pr/invoicing`)
+- **Official modules**: Published by Online PR (e.g. `online-pr/projects`, `online-pr/invoicing`)
 - **Future marketplace**: Exclusive module marketplace for premium add-ons
 - **Config**: `config/modules.php` – register official modules
 - **Database**: `modules` table – enabled modules per install
@@ -39,6 +39,6 @@ ModuleService::disable('online-pr/projects');
 
 The architecture supports a future exclusive marketplace where:
 
-- Modules are published by Online.PR
+- Modules are published by Online PR
 - Agencies can browse and install modules
 - Premium modules may require a license

@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Public site: homepage, packages list, publications list
 - Lead forms: contact, request quote
-- Footer with "Powered by Online.PR" attribution
+- Footer with "Powered by Online PR" attribution
 - Auth: register, login, password reset (Laravel Breeze)
 - Admin dashboard with navigation
 - Leads CRM: list, filters (status, source), detail view, update status/notes

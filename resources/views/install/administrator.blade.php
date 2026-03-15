@@ -16,7 +16,7 @@
                 <div class="space-y-4">
                     <div>
                         <label for="app_name" class="block text-sm font-medium text-gray-700">Site Name *</label>
-                        <input type="text" name="app_name" id="app_name" value="{{ old('app_name', 'Online.PR') }}" required
+                        <input type="text" name="app_name" id="app_name" value="{{ old('app_name', 'Online PR') }}" required
                             class="mt-1 block w-full rounded-md border-gray-300">
                     </div>
                     <div>
@@ -59,7 +59,7 @@
             </div>
 
             <button type="submit" id="install-btn" class="w-full px-6 py-3 bg-gray-800 text-white rounded-md hover:bg-gray-700 font-medium">
-                Install Online.PR
+                Install Online PR
             </button>
         </form>
     </div>

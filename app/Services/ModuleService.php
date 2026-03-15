@@ -6,7 +6,7 @@ use App\Models\Module;
 
 /**
  * Module system for future marketplace.
- * Official modules will be published by Online.PR.
+ * Official modules will be published by Online PR.
  * Architecture prepared for exclusive module marketplace.
  */
 class ModuleService

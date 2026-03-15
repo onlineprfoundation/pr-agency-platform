@@ -7,7 +7,7 @@ return [
     | Module Marketplace (Future)
     |--------------------------------------------------------------------------
     |
-    | Official modules published by Online.PR. Future: exclusive marketplace
+    | Official modules published by Online PR. Future: exclusive marketplace
     | for premium modules.
     |
     */
