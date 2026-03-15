@@ -127,6 +127,20 @@ See `.env.example`. Key variables:
 
 ## Deployment
 
+### cPanel / Shared Hosting
+
+See **[docs/INSTALL_CPANEL.md](docs/INSTALL_CPANEL.md)** for step-by-step instructions:
+
+1. Build deploy ZIP: `composer install --no-dev && npm run build` then zip (or use `php scripts/build-deploy-zip.php`)
+2. Create MySQL database in cPanel
+3. Upload and extract to your hosting
+4. Set document root to `public` folder (or use root `.htaccess` to redirect)
+5. Visit `https://yourdomain.com/install` and follow the wizard
+
+---
+
+### VPS / Dedicated Server
+
 ```bash
 composer install --no-dev --optimize-autoloader
 php artisan migrate --force
