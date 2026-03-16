@@ -5,8 +5,12 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('home') }}" class="font-semibold text-gray-800">
-                        {{ \App\Models\Setting::get('site_name', config('app.name')) }}
+                    <a href="{{ route('home') }}" class="flex items-center gap-2 font-semibold text-gray-800">
+                        @if(\App\Models\Setting::get('logo_path'))
+                            <img src="{{ \Illuminate\Support\Facades\Storage::url(\App\Models\Setting::get('logo_path')) }}" alt="{{ \App\Models\Setting::get('site_name', config('app.name')) }}" class="h-8 object-contain">
+                        @else
+                            {{ \App\Models\Setting::get('site_name', config('app.name')) }}
+                        @endif
                     </a>
                 </div>
 

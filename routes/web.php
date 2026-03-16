@@ -41,6 +41,9 @@ Route::get('/checkout/cancel', [StripeCheckoutController::class, 'cancel'])->nam
 Route::post('/webhook/stripe', [StripeCheckoutController::class, 'webhook'])->name('webhook.stripe')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
 Route::get('/dashboard', function () {
+    if (auth()->user()->isClient()) {
+        return redirect()->route('portal.index');
+    }
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -50,7 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('leads', AdminLeadController::class)->except(['create', 'store', 'edit']);
     Route::resource('clients', \App\Http\Controllers\Admin\ClientController::class);
     Route::post('clients/{client}/invite', [\App\Http\Controllers\Admin\ClientInviteController::class, 'store'])->name('clients.invite');

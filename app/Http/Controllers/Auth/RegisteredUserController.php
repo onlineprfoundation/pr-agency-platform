@@ -39,7 +39,7 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'role' => User::count() === 0 ? 'admin' : 'member',
+            'role' => User::count() === 0 ? 'admin' : 'client',
             'password' => Hash::make($request->password),
         ]);
 
@@ -47,6 +47,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect($user->isClient() ? route('portal.index', absolute: false) : route('dashboard', absolute: false));
     }
 }

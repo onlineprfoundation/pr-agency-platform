@@ -20,7 +20,7 @@ class PortalController extends Controller
     {
         $user = auth()->user();
         if (! $user->client_id) {
-            abort(403, 'Client access only.');
+            return view('portal.pending');
         }
 
         $projects = Project::where('client_id', $user->client_id)

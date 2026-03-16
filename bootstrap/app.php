@@ -14,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'install/run',
         ]);
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\EnsureAdmin::class,
+        ]);
         $middleware->web(prepend: [
             \App\Http\Middleware\UseFileSessionDuringInstall::class,
         ]);

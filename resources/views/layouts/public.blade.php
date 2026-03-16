@@ -25,8 +25,9 @@
                         <a href="{{ route('home') }}" class="flex items-center gap-2">
                             @if(\App\Models\Setting::get('logo_path'))
                                 <img src="{{ \Illuminate\Support\Facades\Storage::url(\App\Models\Setting::get('logo_path')) }}" alt="{{ \App\Models\Setting::get('site_name', config('app.name')) }}" class="h-8 object-contain">
+                            @else
+                                <span class="text-xl font-semibold text-gray-800">{{ \App\Models\Setting::get('site_name', config('app.name')) }}</span>
                             @endif
-                            <span class="text-xl font-semibold text-gray-800">{{ \App\Models\Setting::get('site_name', config('app.name')) }}</span>
                         </a>
                     </div>
                     <div class="flex items-center gap-4">
