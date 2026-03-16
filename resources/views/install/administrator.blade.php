@@ -82,14 +82,22 @@
                 const r = await fetch('{{ route("install.run") }}', {
                     method: 'POST',
                     body: fd,
-                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' }
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 });
-                const data = await r.json();
+                const data = await r.json().catch(() => ({}));
 
                 if (data.success) {
                     window.location.href = '{{ route("install.complete") }}';
                 } else {
-                    err.textContent = data.message || 'Installation failed.';
+                    let msg = data.message || 'Installation failed.';
+                    if (data.errors) {
+                        msg = Object.values(data.errors).flat().join(' ');
+                    }
+                    err.textContent = msg;
                     err.classList.remove('hidden');
                     progress.classList.add('hidden');
                     btn.disabled = false;

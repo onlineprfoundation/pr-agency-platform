@@ -11,6 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->validateCsrfTokens(except: [
+            'install/run',
+        ]);
+        $middleware->web(prepend: [
+            \App\Http\Middleware\UseFileSessionDuringInstall::class,
+        ]);
         $middleware->web(append: [
             \App\Http\Middleware\EnsureInstalled::class,
         ]);

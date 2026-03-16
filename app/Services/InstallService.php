@@ -6,11 +6,26 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Symfony\Component\Process\PhpExecutableFinder;
 
 class InstallService
 {
     protected string $installLockPath;
+
+    /**
+     * PHP CLI binary for subprocesses. When running under PHP-FPM, the resolved
+     * binary may be php-fpm which cannot run artisan; use php CLI instead.
+     */
+    protected function phpBinary(): string
+    {
+        $binary = (new PhpExecutableFinder)->find(false) ?: 'php';
+        if (str_contains((string) $binary, 'fpm')) {
+            return 'php';
+        }
+        return $binary;
+    }
 
     public function __construct()
     {
@@ -131,6 +146,76 @@ class InstallService
     }
 
     /**
+     * Save database config to .env so it persists across requests (session can be lost).
+     */
+    public function saveDatabaseConfigToEnv(array $config): void
+    {
+        $envPath = base_path('.env');
+        if (! File::exists($envPath) && File::exists(base_path('.env.example'))) {
+            File::copy(base_path('.env.example'), $envPath);
+        }
+        if (! File::exists($envPath)) {
+            return;
+        }
+
+        $connection = $config['connection'] ?? 'sqlite';
+        $content = File::get($envPath);
+
+        $content = preg_replace('/^DB_CONNECTION=.*/m', 'DB_CONNECTION=' . $connection, $content);
+
+        if ($connection === 'sqlite') {
+            $dbPath = $config['database'] ?? database_path('database.sqlite');
+            if (! File::exists($dbPath)) {
+                File::put($dbPath, '');
+            }
+            $content = preg_replace('/^DB_DATABASE=.*/m', 'DB_DATABASE=' . $dbPath, $content);
+        } else {
+            $content = preg_replace('/^#?\s*DB_HOST=.*/m', 'DB_HOST=' . ($config['host'] ?? '127.0.0.1'), $content);
+            $content = preg_replace('/^#?\s*DB_PORT=.*/m', 'DB_PORT=' . ($config['port'] ?? ($connection === 'mysql' ? '3306' : '5432')), $content);
+            $content = preg_replace('/^#?\s*DB_DATABASE=.*/m', 'DB_DATABASE=' . ($config['database'] ?? 'laravel'), $content);
+            $content = preg_replace('/^#?\s*DB_USERNAME=.*/m', 'DB_USERNAME=' . ($config['username'] ?? 'root'), $content);
+            $content = preg_replace('/^#?\s*DB_PASSWORD=.*/m', 'DB_PASSWORD=' . ($config['password'] ?? ''), $content);
+        }
+
+        File::put($envPath, $content);
+    }
+
+    /**
+     * Read database config from .env (fallback when session is lost).
+     */
+    public function getDatabaseConfigFromEnv(): ?array
+    {
+        $envPath = base_path('.env');
+        if (! File::exists($envPath)) {
+            return null;
+        }
+
+        $vars = [];
+        foreach (file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '#')) {
+                continue;
+            }
+            if (str_contains($line, '=')) {
+                [$key, $value] = explode('=', $line, 2);
+                $vars[trim($key)] = trim($value, " \t\n\r\0\x0B\"'");
+            }
+        }
+
+        $connection = $vars['DB_CONNECTION'] ?? 'sqlite';
+        $dbDatabase = $vars['DB_DATABASE'] ?? ($connection === 'sqlite' ? database_path('database.sqlite') : 'laravel');
+
+        return [
+            'db_connection' => $connection,
+            'db_database' => $dbDatabase,
+            'db_host' => $vars['DB_HOST'] ?? '127.0.0.1',
+            'db_port' => $vars['DB_PORT'] ?? ($connection === 'mysql' ? '3306' : '5432'),
+            'db_username' => $vars['DB_USERNAME'] ?? 'root',
+            'db_password' => $vars['DB_PASSWORD'] ?? '',
+        ];
+    }
+
+    /**
      * Run the installation.
      */
     public function install(array $data): array
@@ -167,11 +252,11 @@ class InstallService
                 }
                 $envContent = preg_replace('/^DB_DATABASE=.*/m', 'DB_DATABASE=' . $dbPath, $envContent);
             } else {
-                $envContent = preg_replace('/^DB_HOST=.*/m', 'DB_HOST=' . ($data['db_host'] ?? '127.0.0.1'), $envContent);
-                $envContent = preg_replace('/^#?DB_PORT=.*/m', 'DB_PORT=' . ($data['db_port'] ?? '3306'), $envContent);
-                $envContent = preg_replace('/^DB_DATABASE=.*/m', 'DB_DATABASE=' . ($data['db_database'] ?? 'laravel'), $envContent);
-                $envContent = preg_replace('/^#?DB_USERNAME=.*/m', 'DB_USERNAME=' . ($data['db_username'] ?? 'root'), $envContent);
-                $envContent = preg_replace('/^#?DB_PASSWORD=.*/m', 'DB_PASSWORD=' . ($data['db_password'] ?? ''), $envContent);
+                $envContent = preg_replace('/^#?\s*DB_HOST=.*/m', 'DB_HOST=' . ($data['db_host'] ?? '127.0.0.1'), $envContent);
+                $envContent = preg_replace('/^#?\s*DB_PORT=.*/m', 'DB_PORT=' . ($data['db_port'] ?? '3306'), $envContent);
+                $envContent = preg_replace('/^#?\s*DB_DATABASE=.*/m', 'DB_DATABASE=' . ($data['db_database'] ?? 'laravel'), $envContent);
+                $envContent = preg_replace('/^#?\s*DB_USERNAME=.*/m', 'DB_USERNAME=' . ($data['db_username'] ?? 'root'), $envContent);
+                $envContent = preg_replace('/^#?\s*DB_PASSWORD=.*/m', 'DB_PASSWORD=' . ($data['db_password'] ?? ''), $envContent);
             }
 
             File::put($envPath, $envContent);
@@ -179,19 +264,30 @@ class InstallService
             Artisan::call('config:clear');
             Artisan::call('cache:clear');
 
-            // Run migrate in subprocess to pick up new .env
-            $process = \Illuminate\Support\Facades\Process::run([
-                PHP_BINARY,
-                base_path('artisan'),
-                'migrate',
-                '--force',
-            ], base_path(), timeout: 60);
-
-            if (! $process->successful()) {
-                throw new \RuntimeException('Migration failed: ' . $process->errorOutput());
+            if ($connection === 'mysql') {
+                // Import schema.sql for MySQL - avoids migration ordering issues
+                $schemaPath = database_path('schema.sql');
+                if (File::exists($schemaPath)) {
+                    $this->importSchema($data);
+                } else {
+                    $this->runMigrations();
+                }
+            } else {
+                // SQLite: remove existing DB from failed installs so migrations start fresh
+                $dbPath = $data['db_database'] ?? database_path('database.sqlite');
+                if ($dbPath !== ':memory:' && File::exists($dbPath)) {
+                    File::delete($dbPath);
+                    File::put($dbPath, '');
+                }
+                $this->runMigrations();
             }
 
-            Artisan::call('storage:link');
+            File::ensureDirectoryExists(storage_path('app/public'));
+            try {
+                Artisan::call('storage:link');
+            } catch (\Throwable $e) {
+                Log::warning('storage:link failed (non-fatal): ' . $e->getMessage());
+            }
 
             // Create admin via subprocess (loads fresh config)
             $adminDataPath = storage_path('app/install_admin_' . Str::random(16) . '.json');
@@ -202,12 +298,17 @@ class InstallService
             ]));
             chmod($adminDataPath, 0600);
 
-            $process = \Illuminate\Support\Facades\Process::run([
-                PHP_BINARY,
-                base_path('artisan'),
-                'install:create-admin',
-                $adminDataPath,
-            ], base_path(), timeout: 30);
+            $process = \Illuminate\Support\Facades\Process::timeout(30)
+                ->path(base_path())
+                ->env(array_merge(getenv() ?: [], [
+                    'PATH' => '/usr/local/bin:/usr/bin:/bin:' . (getenv('PATH') ?: ''),
+                ]))
+                ->run([
+                    $this->phpBinary(),
+                    base_path('artisan'),
+                    'install:create-admin',
+                    $adminDataPath,
+                ]);
 
             if (! $process->successful()) {
                 File::delete($adminDataPath);
@@ -216,16 +317,114 @@ class InstallService
 
             File::put($this->installLockPath, date('c'));
 
-            // Switch to database session/cache now that migrations have run
+            // Keep file session/cache - more reliable, no DB table dependency
             $envPath = base_path('.env');
             $envContent = File::get($envPath);
-            $envContent = preg_replace('/^SESSION_DRIVER=.*/m', 'SESSION_DRIVER=database', $envContent);
-            $envContent = preg_replace('/^CACHE_STORE=.*/m', 'CACHE_STORE=database', $envContent);
+            $envContent = preg_replace('/^SESSION_DRIVER=.*/m', 'SESSION_DRIVER=file', $envContent);
+            $envContent = preg_replace('/^CACHE_STORE=.*/m', 'CACHE_STORE=file', $envContent);
             File::put($envPath, $envContent);
 
             return ['success' => true, 'message' => 'Installation complete.'];
         } catch (\Throwable $e) {
             return ['success' => false, 'message' => $e->getMessage()];
         }
+    }
+
+    /**
+     * Import schema.sql for MySQL (avoids migration ordering issues).
+     */
+    protected function importSchema(array $data): void
+    {
+        $schemaPath = database_path('schema.sql');
+        $host = $data['db_host'] ?? '127.0.0.1';
+        $port = $data['db_port'] ?? '3306';
+        $user = $data['db_username'] ?? 'root';
+        $pass = $data['db_password'] ?? '';
+        $database = $data['db_database'] ?? 'laravel';
+
+        $cmd = sprintf(
+            'mysql -h %s -P %s -u %s %s < %s',
+            escapeshellarg($host),
+            escapeshellarg($port),
+            escapeshellarg($user),
+            escapeshellarg($database),
+            escapeshellarg($schemaPath)
+        );
+
+        $env = array_merge(getenv() ?: [], [
+            'MYSQL_PWD' => $pass,
+            'PATH' => '/usr/local/bin:/usr/bin:/bin:' . (getenv('PATH') ?: ''),
+        ]);
+        $process = \Illuminate\Support\Facades\Process::timeout(60)
+            ->path(base_path())
+            ->env($env)
+            ->run(['sh', '-c', $cmd]);
+
+        if (! $process->successful()) {
+            $err = trim($process->errorOutput());
+            $out = trim($process->output());
+            $combined = $err . "\n" . $out;
+
+            // If mysql CLI not found, fall back to migrations
+            if (str_contains($combined, 'command not found') || str_contains($combined, 'No such file')) {
+                $this->logInstallError('mysql CLI not found, falling back to migrations', [
+                    'exit_code' => $process->exitCode(),
+                    'stderr' => $err,
+                    'stdout' => $out,
+                ]);
+                $this->runMigrations();
+                return;
+            }
+
+            $msg = $err ?: $out ?: 'mysql command failed (exit ' . $process->exitCode() . ')';
+            $this->logInstallError('Schema import failed', [
+                'exit_code' => $process->exitCode(),
+                'stderr' => $err,
+                'stdout' => $out,
+                'cmd' => 'mysql -h ' . $host . ' -P ' . $port . ' -u ' . $user . ' [DB]',
+            ]);
+            throw new \RuntimeException('Schema import failed: ' . $msg);
+        }
+    }
+
+    /**
+     * Run Laravel migrations (used for SQLite or when schema.sql is missing).
+     */
+    protected function runMigrations(): void
+    {
+        $process = \Illuminate\Support\Facades\Process::timeout(60)
+            ->path(base_path())
+            ->env(array_merge(getenv() ?: [], [
+                'PATH' => '/usr/local/bin:/usr/bin:/bin:' . (getenv('PATH') ?: ''),
+            ]))
+            ->run([
+                $this->phpBinary(),
+                base_path('artisan'),
+                'migrate',
+                '--force',
+            ]);
+
+        if (! $process->successful()) {
+            $err = trim($process->errorOutput());
+            $out = trim($process->output());
+            $msg = $err ?: $out ?: 'migrate command failed (exit ' . $process->exitCode() . ')';
+            $this->logInstallError('Migration failed', [
+                'exit_code' => $process->exitCode(),
+                'stderr' => $err,
+                'stdout' => $out,
+            ]);
+            throw new \RuntimeException('Migration failed: ' . $msg);
+        }
+    }
+
+    /**
+     * Log install errors to storage/logs/install.log and Laravel log.
+     */
+    protected function logInstallError(string $title, array $context): void
+    {
+        $line = $title . ' ' . json_encode($context, JSON_UNESCAPED_SLASHES);
+        Log::error($line);
+        $logPath = storage_path('logs/install.log');
+        File::append($logPath, date('c') . ' ' . $line . "\n");
     }
 }

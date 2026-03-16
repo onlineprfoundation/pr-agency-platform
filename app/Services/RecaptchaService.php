@@ -25,12 +25,12 @@ class RecaptchaService
 
     public static function getSiteKey(): string
     {
-        return Setting::get('recaptcha_site_key', '') ?: config('services.recaptcha.site_key', '');
+        return (string) (Setting::get('recaptcha_site_key', '') ?: config('services.recaptcha.site_key', '') ?: '');
     }
 
     public static function getSecretKey(): string
     {
-        return Setting::get('recaptcha_secret_key', '') ?: config('services.recaptcha.secret_key', '');
+        return (string) (Setting::get('recaptcha_secret_key', '') ?: config('services.recaptcha.secret_key', '') ?: '');
     }
 
     public static function verify(string $token): bool

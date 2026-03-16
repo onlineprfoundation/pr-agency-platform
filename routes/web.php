@@ -20,7 +20,8 @@ Route::prefix('install')->name('install.')->group(function () {
     Route::match(['get', 'post'], '/database', [InstallController::class, 'database'])->name('database');
     Route::post('/test-database', [InstallController::class, 'testDatabase'])->name('test-database');
     Route::get('/administrator', [InstallController::class, 'administrator'])->name('administrator');
-    Route::post('/run', [InstallController::class, 'run'])->name('run');
+    Route::post('/run', [InstallController::class, 'run'])->name('run')
+        ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
     Route::get('/complete', [InstallController::class, 'complete'])->name('complete');
 });
 
