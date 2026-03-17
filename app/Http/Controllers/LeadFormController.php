@@ -70,11 +70,15 @@ class LeadFormController extends Controller
             'company' => 'nullable|string|max:255',
             'message' => 'nullable|string|max:5000',
             'package_interest' => 'nullable|string|max:255',
+            'publication_interest' => 'nullable|string|max:255',
         ]);
 
         $message = $validated['message'] ?? '';
         if (! empty($validated['package_interest'] ?? '')) {
             $message = "Package interest: {$validated['package_interest']}\n\n" . $message;
+        }
+        if (! empty($validated['publication_interest'] ?? '')) {
+            $message = ($message ? $message . "\n\n" : '') . "Publication interest: {$validated['publication_interest']}";
         }
 
         Lead::create([

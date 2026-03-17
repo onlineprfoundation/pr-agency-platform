@@ -38,7 +38,7 @@ class ProjectController extends Controller
             'client_id' => 'required|exists:clients,id',
             'name' => 'required|string|max:255',
             'status' => 'required|in:draft,active,review,completed,cancelled',
-            'value_cents' => 'nullable|integer|min:0',
+            'value_dollars' => 'nullable|numeric|min:0',
             'due_date' => 'nullable|date',
             'notes' => 'nullable|string|max:5000',
             'style_guide' => 'nullable|string|max:2000',
@@ -47,9 +47,11 @@ class ProjectController extends Controller
         ]);
 
         $publications = $validated['publications'] ?? [];
-        unset($validated['publications']);
+        unset($validated['publications'], $validated['value_dollars']);
 
-        $validated['value_cents'] = $validated['value_cents'] ?: null;
+        $validated['value_cents'] = isset($request->value_dollars) && $request->value_dollars !== '' && $request->value_dollars !== null
+            ? (int) round((float) $request->value_dollars * 100)
+            : null;
 
         $project = Project::create($validated);
 
@@ -85,7 +87,7 @@ class ProjectController extends Controller
             'client_id' => 'required|exists:clients,id',
             'name' => 'required|string|max:255',
             'status' => 'required|in:draft,active,review,completed,cancelled',
-            'value_cents' => 'nullable|integer|min:0',
+            'value_dollars' => 'nullable|numeric|min:0',
             'due_date' => 'nullable|date',
             'notes' => 'nullable|string|max:5000',
             'style_guide' => 'nullable|string|max:2000',
@@ -94,8 +96,11 @@ class ProjectController extends Controller
         ]);
 
         $publications = $validated['publications'] ?? [];
-        unset($validated['publications']);
-        $validated['value_cents'] = $validated['value_cents'] ?: null;
+        unset($validated['publications'], $validated['value_dollars']);
+
+        $validated['value_cents'] = isset($request->value_dollars) && $request->value_dollars !== '' && $request->value_dollars !== null
+            ? (int) round((float) $request->value_dollars * 100)
+            : null;
 
         $project->update($validated);
 

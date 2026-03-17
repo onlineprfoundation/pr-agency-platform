@@ -21,9 +21,9 @@
                         <x-nav-link :href="route('portal.index')" :active="request()->routeIs('portal.*')">
                             Portal
                         </x-nav-link>
-                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                            {{ __('Dashboard') }}
-                        </x-nav-link>
+                        <x-nav-link :href="route('packages.index')">Packages</x-nav-link>
+                        <x-nav-link :href="route('publications.index')">Publications</x-nav-link>
+                        <x-nav-link :href="route('quote')">Request Quote</x-nav-link>
                     @else
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             {{ __('Dashboard') }}
@@ -120,9 +120,9 @@
                 <x-responsive-nav-link :href="route('portal.index')" :active="request()->routeIs('portal.*')">
                     Portal
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                    {{ __('Dashboard') }}
-                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('packages.index')">Packages</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('publications.index')">Publications</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('quote')">Request Quote</x-responsive-nav-link>
             @else
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                     {{ __('Dashboard') }}

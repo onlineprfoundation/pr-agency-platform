@@ -62,7 +62,7 @@
                         @endif
                     </div>
                     <div class="text-sm text-gray-500">
-                        <a href="https://online.pr" target="_blank" rel="noopener" class="hover:text-gray-700">Powered by Online PR</a>
+                        <a href="https://online.pr/opensource/pr-agency-platform" target="_blank" rel="noopener" class="hover:text-gray-700">Powered by Online PR</a>
                     </div>
                 </div>
             </div>

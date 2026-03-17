@@ -12,4 +12,9 @@ class PublicationController extends Controller
 
         return view('publications.index', compact('publications'));
     }
+
+    public function show(Publication $publication)
+    {
+        return view('publications.show', compact('publication'));
+    }
 }

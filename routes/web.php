@@ -30,6 +30,7 @@ Route::get('/p/{slug}', [\App\Http\Controllers\PageController::class, 'show'])->
 Route::get('/packages', [PackageController::class, 'index'])->name('packages.index');
 Route::get('/packages/{package}', [PackageController::class, 'show'])->name('packages.show');
 Route::get('/publications', [PublicationController::class, 'index'])->name('publications.index');
+Route::get('/publications/{publication}', [PublicationController::class, 'show'])->name('publications.show');
 Route::get('/contact', [LeadFormController::class, 'contact'])->name('contact');
 Route::post('/contact', [LeadFormController::class, 'storeContact'])->name('contact.store');
 Route::get('/quote', [LeadFormController::class, 'quote'])->name('quote');

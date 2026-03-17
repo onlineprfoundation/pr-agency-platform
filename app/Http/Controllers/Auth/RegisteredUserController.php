@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Client;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -36,12 +37,21 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $isFirstUser = User::count() === 0;
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'role' => User::count() === 0 ? 'admin' : 'client',
+            'role' => $isFirstUser ? 'admin' : 'client',
             'password' => Hash::make($request->password),
         ]);
+
+        if (! $isFirstUser) {
+            $client = Client::create([
+                'name' => $request->name,
+                'email' => $request->email,
+            ]);
+            $user->update(['client_id' => $client->id]);
+        }
 
         event(new Registered($user));
 

@@ -40,7 +40,7 @@
         </div>
 
         <footer class="py-4 text-center text-sm text-gray-500">
-            <a href="https://online.pr" target="_blank" rel="noopener">Powered by Online PR</a>
+            <a href="https://online.pr/opensource/pr-agency-platform" target="_blank" rel="noopener">Powered by Online PR</a>
         </footer>
     </div>
 </body>

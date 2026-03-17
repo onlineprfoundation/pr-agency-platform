@@ -4,12 +4,22 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
     public function index()
     {
+        // Sync: create Client records for users who registered as client but have no linked Client
+        User::where('role', 'client')->whereNull('client_id')->each(function (User $user) {
+            $client = Client::firstOrCreate(
+                ['email' => $user->email],
+                ['name' => $user->name]
+            );
+            $user->update(['client_id' => $client->id]);
+        });
+
         $clients = Client::withCount('projects')->latest()->paginate(20);
 
         return view('admin.clients.index', compact('clients'));

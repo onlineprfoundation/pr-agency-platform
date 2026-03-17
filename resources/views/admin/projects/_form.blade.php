@@ -20,8 +20,9 @@
     </select>
 </div>
 <div>
-    <label for="value_cents" class="block text-sm font-medium text-gray-700">Value (cents)</label>
-    <input type="number" name="value_cents" id="value_cents" value="{{ old('value_cents', $project->value_cents) }}" min="0" class="mt-1 block w-full rounded-md border-gray-300" placeholder="e.g. 9999 for $99.99">
+    <label for="value_dollars" class="block text-sm font-medium text-gray-700">Value (USD)</label>
+    <input type="number" name="value_dollars" id="value_dollars" value="{{ old('value_dollars', $project->value_cents ? $project->value_cents / 100 : '') }}" min="0" step="0.01" class="mt-1 block w-full rounded-md border-gray-300" placeholder="e.g. 99.99">
+    <p class="mt-1 text-xs text-gray-500">Enter amount in dollars (e.g. 99.99)</p>
 </div>
 <div>
     <label for="due_date" class="block text-sm font-medium text-gray-700">Due Date</label>

@@ -68,7 +68,26 @@ class StripeCheckoutController extends Controller
             return redirect()->route('packages.index')->with('error', 'Invalid session.');
         }
 
-        return view('checkout.success', ['session_id' => $sessionId]);
+        $secret = Setting::getConfig('services.stripe.secret');
+        if (empty($secret)) {
+            return view('checkout.success', ['session_id' => $sessionId, 'payment' => null, 'package' => null]);
+        }
+
+        Stripe::setApiKey($secret);
+        try {
+            $session = StripeSession::retrieve($sessionId);
+        } catch (\Exception $e) {
+            return redirect()->route('packages.index')->with('error', 'Could not verify payment.');
+        }
+
+        if ($session->payment_status !== 'paid') {
+            return redirect()->route('packages.index')->with('error', 'Payment was not completed.');
+        }
+
+        $payment = Payment::where('stripe_id', $sessionId)->first();
+        $package = $payment?->package;
+
+        return view('checkout.success', ['session_id' => $sessionId, 'payment' => $payment, 'package' => $package]);
     }
 
     public function cancel()
