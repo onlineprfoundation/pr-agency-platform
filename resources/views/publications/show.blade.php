@@ -58,9 +58,14 @@
                         </a>
                     @endif
 
-                    <div class="mt-8 pt-6 border-t border-gray-200">
-                        <a href="{{ route('quote') }}?publication={{ urlencode($publication->name) }}" class="inline-flex items-center px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 font-medium">
-                            Request quote for this publication
+                    <div class="mt-8 pt-6 border-t border-gray-200 flex flex-wrap gap-3">
+                        @if($publication->hasPrice())
+                            <a href="{{ route('publications.checkout.create', $publication) }}" class="inline-flex items-center px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 font-medium">
+                                Purchase – {{ $publication->formatted_price }}
+                            </a>
+                        @endif
+                        <a href="{{ route('quote', ['publication_id' => $publication->id]) }}" class="inline-flex items-center px-6 py-3 {{ $publication->hasPrice() ? 'border-2 border-gray-300 rounded-lg hover:bg-gray-50 font-medium' : 'bg-gray-800 text-white rounded-lg hover:bg-gray-700 font-medium' }}">
+                            Request quote
                         </a>
                     </div>
                 </div>

@@ -64,7 +64,10 @@
                             </a>
                             <div class="p-4 border-t border-gray-100 flex gap-2">
                                 <a href="{{ route('publications.show', $publication) }}" class="flex-1 text-center px-3 py-2 bg-gray-800 text-white text-sm font-medium rounded-lg hover:bg-gray-700">View details</a>
-                                <a href="{{ route('quote') }}?publication={{ urlencode($publication->name) }}" class="flex-1 text-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50">Request quote</a>
+                                @if($publication->hasPrice())
+                                    <a href="{{ route('publications.checkout.create', $publication) }}" class="flex-1 text-center px-3 py-2 bg-gray-700 text-white text-sm font-medium rounded-lg hover:bg-gray-600">Purchase</a>
+                                @endif
+                                <a href="{{ route('quote', ['publication_id' => $publication->id]) }}" class="flex-1 text-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50">Request quote</a>
                             </div>
                         </div>
                     @endforeach

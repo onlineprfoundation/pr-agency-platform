@@ -34,6 +34,56 @@
                 </a>
             </div>
 
+            {{-- My Orders (package + publication) --}}
+            @if($orders->isNotEmpty() || $publicationOrders->isNotEmpty())
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-8">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="font-semibold text-gray-900">My Orders</h3>
+                    <p class="text-sm text-gray-500 mt-1">Your package purchases – submit content or track status</p>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        @foreach($orders as $order)
+                            <a href="{{ route('portal.orders.show', $order) }}" class="block p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <span class="text-xs text-gray-500">Package</span>
+                                        <h4 class="font-medium text-gray-900">{{ $order->package->name }}</h4>
+                                        <p class="text-sm text-gray-500 mt-1">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</p>
+                                        @if($order->live_link)
+                                            <p class="text-sm text-blue-600 mt-2">Live: <a href="{{ $order->live_link }}" target="_blank" rel="noopener" class="hover:underline">{{ Str::limit($order->live_link, 50) }}</a></p>
+                                        @endif
+                                    </div>
+                                    <span class="text-gray-400">→</span>
+                                </div>
+                            </a>
+                        @endforeach
+                        @foreach($publicationOrders as $order)
+                            <a href="{{ route('portal.publication-orders.show', $order) }}" class="block p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <span class="text-xs text-gray-500">Publication</span>
+                                        <h4 class="font-medium text-gray-900">{{ $order->publication->name }}</h4>
+                                        <p class="text-sm text-gray-500 mt-1">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</p>
+                                        @if($order->live_link)
+                                            <p class="text-sm text-blue-600 mt-2">Live: <a href="{{ $order->live_link }}" target="_blank" rel="noopener" class="hover:underline">{{ Str::limit($order->live_link, 50) }}</a></p>
+                                        @endif
+                                    </div>
+                                    <span class="text-gray-400">→</span>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                    @if($orders->isNotEmpty() || $publicationOrders->isNotEmpty())
+                    <div class="mt-4 flex gap-4">
+                        @if($orders->isNotEmpty())<a href="{{ route('portal.orders.index') }}" class="text-sm text-gray-600 hover:text-gray-900 font-medium">Package orders →</a>@endif
+                        @if($publicationOrders->isNotEmpty())<a href="{{ route('portal.publication-orders.index') }}" class="text-sm text-gray-600 hover:text-gray-900 font-medium">Publication orders →</a>@endif
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+
             {{-- My Projects --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 border-b border-gray-200">

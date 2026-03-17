@@ -36,10 +36,19 @@ Route::post('/contact', [LeadFormController::class, 'storeContact'])->name('cont
 Route::get('/quote', [LeadFormController::class, 'quote'])->name('quote');
 Route::post('/quote', [LeadFormController::class, 'storeQuote'])->name('quote.store');
 
-Route::get('/checkout/{package}', [StripeCheckoutController::class, 'create'])->name('checkout.create');
 Route::get('/checkout/success', [StripeCheckoutController::class, 'success'])->name('checkout.success');
 Route::get('/checkout/cancel', [StripeCheckoutController::class, 'cancel'])->name('checkout.cancel');
+Route::get('/checkout/{package}', [StripeCheckoutController::class, 'create'])->name('checkout.create');
 Route::post('/webhook/stripe', [StripeCheckoutController::class, 'webhook'])->name('webhook.stripe')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
+Route::get('/orders/{token}', [\App\Http\Controllers\PackageOrderController::class, 'showByToken'])->name('orders.show');
+Route::post('/orders/{token}', [\App\Http\Controllers\PackageOrderController::class, 'submitByToken'])->name('orders.submit');
+
+Route::get('/publications/checkout/{publication}', [\App\Http\Controllers\PublicationCheckoutController::class, 'create'])->name('publications.checkout.create');
+Route::get('/publications/checkout/success', [\App\Http\Controllers\PublicationCheckoutController::class, 'success'])->name('publications.checkout.success');
+
+Route::get('/publication-orders/{token}', [\App\Http\Controllers\PublicationOrderController::class, 'showByToken'])->name('publication-orders.show');
+Route::post('/publication-orders/{token}', [\App\Http\Controllers\PublicationOrderController::class, 'submitByToken'])->name('publication-orders.submit');
 
 Route::get('/dashboard', function () {
     if (auth()->user()->isClient()) {
@@ -71,6 +80,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
     Route::put('settings', [SettingController::class, 'update'])->name('settings.update')->middleware('throttle:10,1');
     Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::get('orders', [\App\Http\Controllers\Admin\PackageOrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/{order}', [\App\Http\Controllers\Admin\PackageOrderController::class, 'show'])->name('orders.show');
+    Route::put('orders/{order}', [\App\Http\Controllers\Admin\PackageOrderController::class, 'update'])->name('orders.update');
+    Route::get('publication-orders', [\App\Http\Controllers\Admin\PublicationOrderController::class, 'index'])->name('publication-orders.index');
+    Route::get('publication-orders/{order}', [\App\Http\Controllers\Admin\PublicationOrderController::class, 'show'])->name('publication-orders.show');
+    Route::put('publication-orders/{order}', [\App\Http\Controllers\Admin\PublicationOrderController::class, 'update'])->name('publication-orders.update');
     Route::get('modules', [\App\Http\Controllers\Admin\ModuleController::class, 'index'])->name('modules.index');
     Route::post('modules/enable', [\App\Http\Controllers\Admin\ModuleController::class, 'enable'])->name('modules.enable');
     Route::post('modules/disable', [\App\Http\Controllers\Admin\ModuleController::class, 'disable'])->name('modules.disable');
@@ -84,6 +99,14 @@ Route::prefix('portal')->name('portal.')->middleware(['auth'])->group(function (
     Route::post('/projects/{project}/documents', [\App\Http\Controllers\ClientPortal\PortalController::class, 'storeDocument'])->name('projects.documents.store');
     Route::get('/projects/{project}/documents/{document}/download', [\App\Http\Controllers\ClientPortal\PortalController::class, 'downloadDocument'])->name('projects.documents.download');
     Route::post('/projects/{project}/messages', [\App\Http\Controllers\ClientPortal\PortalController::class, 'storeMessage'])->name('projects.messages.store');
+    Route::get('/orders', [\App\Http\Controllers\ClientPortal\PackageOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [\App\Http\Controllers\ClientPortal\PackageOrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/submit', [\App\Http\Controllers\ClientPortal\PackageOrderController::class, 'submit'])->name('orders.submit');
+    Route::get('/orders/{order}/documents/{document}/download', [\App\Http\Controllers\ClientPortal\PackageOrderController::class, 'downloadDocument'])->name('orders.documents.download');
+    Route::get('/publication-orders', [\App\Http\Controllers\ClientPortal\PublicationOrderController::class, 'index'])->name('publication-orders.index');
+    Route::get('/publication-orders/{order}', [\App\Http\Controllers\ClientPortal\PublicationOrderController::class, 'show'])->name('publication-orders.show');
+    Route::post('/publication-orders/{order}/submit', [\App\Http\Controllers\ClientPortal\PublicationOrderController::class, 'submit'])->name('publication-orders.submit');
+    Route::get('/publication-orders/{order}/documents/{document}/download', [\App\Http\Controllers\ClientPortal\PublicationOrderController::class, 'downloadDocument'])->name('publication-orders.documents.download');
 });
 
 require __DIR__.'/auth.php';

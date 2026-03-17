@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\ClientPortal;
 
 use App\Http\Controllers\Controller;
+use App\Models\PackageOrder;
 use App\Models\Project;
+use App\Models\PublicationOrder;
 use App\Models\ProjectDocument;
 use App\Models\ProjectMessage;
 use Illuminate\Http\Request;
@@ -23,7 +25,19 @@ class PortalController extends Controller
             ->latest()
             ->get();
 
-        return view('portal.index', compact('projects'));
+        $orders = PackageOrder::with('package')
+            ->when($user->client_id, fn ($q) => $q->where('client_id', $user->client_id))
+            ->when(! $user->client_id, fn ($q) => $q->where('email', $user->email))
+            ->latest()
+            ->get();
+
+        $publicationOrders = PublicationOrder::with('publication')
+            ->when($user->client_id, fn ($q) => $q->where('client_id', $user->client_id))
+            ->when(! $user->client_id, fn ($q) => $q->where('email', $user->email))
+            ->latest()
+            ->get();
+
+        return view('portal.index', compact('projects', 'orders', 'publicationOrders'));
     }
 
     public function show(Project $project)

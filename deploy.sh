@@ -50,6 +50,7 @@ REMOTE_CMD="cd $REMOTE_PATH && \
   npm ci 2>/dev/null || npm install && \
   npm run build && \
   php artisan package:discover && \
+  php artisan migrate --force && \
   php artisan config:cache && \
   php artisan route:cache && \
   php artisan view:cache && \

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Package;
+use App\Models\PackageOrder;
 use App\Models\Payment;
+use App\Models\PublicationOrder;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -43,8 +45,10 @@ class StripeCheckoutController extends Controller
             'mode' => 'payment',
             'success_url' => route('checkout.success') . '?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => route('checkout.cancel'),
+            'customer_email' => auth()->check() && auth()->user()->email ? auth()->user()->email : null,
             'metadata' => [
                 'package_id' => (string) $package->id,
+                'client_id' => auth()->check() && auth()->user()->client_id ? (string) auth()->user()->client_id : '',
             ],
         ]);
 
@@ -53,7 +57,7 @@ class StripeCheckoutController extends Controller
             [
                 'package_id' => $package->id,
                 'amount_cents' => $package->price_cents,
-                'email' => '',
+                'email' => auth()->check() ? auth()->user()->email : '',
                 'status' => 'pending',
             ]
         );
@@ -85,9 +89,44 @@ class StripeCheckoutController extends Controller
         }
 
         $payment = Payment::where('stripe_id', $sessionId)->first();
+        if ($payment) {
+            $payment->update([
+                'status' => 'completed',
+                'email' => $session->customer_email ?? $session->customer_details->email ?? $payment->email ?? '',
+            ]);
+        }
         $package = $payment?->package;
 
+        $order = $this->ensurePackageOrder($payment, $session);
+        if ($order) {
+            if (auth()->check()) {
+                return redirect()->route('portal.orders.show', $order)->with('success', 'Thank you for your purchase! Submit your content below.');
+            }
+            return redirect()->route('orders.show', $order->access_token)->with('success', 'Thank you for your purchase! Submit your content below.');
+        }
+
         return view('checkout.success', ['session_id' => $sessionId, 'payment' => $payment, 'package' => $package]);
+    }
+
+    private function ensurePackageOrder(?Payment $payment, $session): ?PackageOrder
+    {
+        if (! $payment || $payment->status !== 'completed') {
+            return null;
+        }
+        $order = $payment->packageOrder;
+        if ($order) {
+            return $order;
+        }
+        $email = $session->customer_email ?? $session->customer_details->email ?? $payment->email ?? '';
+        $clientId = ! empty($session->metadata->client_id ?? '') ? (int) $session->metadata->client_id : null;
+        return PackageOrder::create([
+            'payment_id' => $payment->id,
+            'package_id' => $payment->package_id,
+            'client_id' => $clientId,
+            'email' => $email,
+            'status' => 'pending_submission',
+            'access_token' => PackageOrder::generateAccessToken(),
+        ]);
     }
 
     public function cancel()
@@ -117,8 +156,31 @@ class StripeCheckoutController extends Controller
             if ($payment) {
                 $payment->update([
                     'status' => 'completed',
-                    'email' => $session->customer_email ?? $session->customer_details->email ?? '',
+                    'email' => $session->customer_email ?? $session->customer_details->email ?? $payment->email ?? '',
                 ]);
+                $clientId = ! empty($session->metadata->client_id ?? '') ? (int) $session->metadata->client_id : null;
+                if ($payment->package_id && ! $payment->packageOrder) {
+                    PackageOrder::create([
+                        'payment_id' => $payment->id,
+                        'package_id' => $payment->package_id,
+                        'client_id' => $clientId,
+                        'email' => $payment->email,
+                        'status' => 'pending_submission',
+                        'access_token' => PackageOrder::generateAccessToken(),
+                    ]);
+                }
+                if ($payment->publication_id && ! $payment->publicationOrder) {
+                    PublicationOrder::create([
+                        'publication_id' => $payment->publication_id,
+                        'payment_id' => $payment->id,
+                        'client_id' => $clientId,
+                        'email' => $payment->email,
+                        'source' => 'purchase',
+                        'status' => 'pending_submission',
+                        'amount_cents' => $payment->amount_cents,
+                        'access_token' => PublicationOrder::generateAccessToken(),
+                    ]);
+                }
             }
         }
 

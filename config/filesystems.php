@@ -53,6 +53,18 @@ return [
             'throw' => false,
         ],
 
+        'package_order_documents' => [
+            'driver' => 'local',
+            'root' => storage_path('app/package-order-documents'),
+            'throw' => false,
+        ],
+
+        'publication_order_documents' => [
+            'driver' => 'local',
+            'root' => storage_path('app/publication-order-documents'),
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

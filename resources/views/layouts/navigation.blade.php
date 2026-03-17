@@ -46,6 +46,12 @@
                         <x-nav-link :href="route('admin.payments.index')" :active="request()->routeIs('admin.payments.*')">
                             Payments
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.orders.index')" :active="request()->routeIs('admin.orders.*')">
+                            Orders
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.publication-orders.index')" :active="request()->routeIs('admin.publication-orders.*')">
+                            Pub. Orders
+                        </x-nav-link>
                         <x-nav-link :href="route('admin.modules.index')" :active="request()->routeIs('admin.modules.*')">
                             Modules
                         </x-nav-link>
@@ -144,6 +150,12 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.payments.index')" :active="request()->routeIs('admin.payments.*')">
                     Payments
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.orders.index')" :active="request()->routeIs('admin.orders.*')">
+                    Orders
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.publication-orders.index')" :active="request()->routeIs('admin.publication-orders.*')">
+                    Pub. Orders
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.modules.index')" :active="request()->routeIs('admin.modules.*')">
                     Modules

@@ -24,4 +24,14 @@ class Client extends Model
     {
         return $this->hasOne(User::class);
     }
+
+    public function packageOrders()
+    {
+        return $this->hasMany(PackageOrder::class);
+    }
+
+    public function publicationOrders()
+    {
+        return $this->hasMany(PublicationOrder::class);
+    }
 }

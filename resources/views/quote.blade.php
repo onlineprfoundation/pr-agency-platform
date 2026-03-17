@@ -22,7 +22,10 @@
                         <input type="hidden" name="package_interest" value="{{ request('package') }}">
                         <p class="text-sm text-gray-600">Requesting quote for package: <strong>{{ request('package') }}</strong></p>
                     @endif
-                    @if(request('publication'))
+                    @if(request('publication_id') && $publication ?? null)
+                        <input type="hidden" name="publication_id" value="{{ $publication->id }}">
+                        <p class="text-sm text-gray-600">Requesting quote for publication: <strong>{{ $publication->name }}</strong></p>
+                    @elseif(request('publication'))
                         <input type="hidden" name="publication_interest" value="{{ request('publication') }}">
                         <p class="text-sm text-gray-600">Requesting quote for publication: <strong>{{ request('publication') }}</strong></p>
                     @endif

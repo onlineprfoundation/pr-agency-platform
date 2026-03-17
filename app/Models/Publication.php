@@ -65,6 +65,21 @@ class Publication extends Model
             : null;
     }
 
+    public function getPriceCentsAttribute(): ?int
+    {
+        return $this->price_usd !== null ? (int) round((float) $this->price_usd * 100) : null;
+    }
+
+    public function hasPrice(): bool
+    {
+        return $this->price_cents !== null && $this->price_cents >= 100;
+    }
+
+    public function publicationOrders()
+    {
+        return $this->hasMany(PublicationOrder::class);
+    }
+
     public function projects()
     {
         return $this->belongsToMany(Project::class, 'project_publication')

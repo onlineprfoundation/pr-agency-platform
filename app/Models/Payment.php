@@ -8,6 +8,7 @@ class Payment extends Model
 {
     protected $fillable = [
         'package_id',
+        'publication_id',
         'project_id',
         'invoice_id',
         'amount_cents',
@@ -29,6 +30,21 @@ class Payment extends Model
     public function invoice()
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    public function packageOrder()
+    {
+        return $this->hasOne(PackageOrder::class);
+    }
+
+    public function publication()
+    {
+        return $this->belongsTo(Publication::class);
+    }
+
+    public function publicationOrder()
+    {
+        return $this->hasOne(PublicationOrder::class);
     }
 
     public function getFormattedAmountAttribute(): string
